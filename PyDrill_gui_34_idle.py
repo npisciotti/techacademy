@@ -17,7 +17,6 @@ class ParentWindow():
             self.master = master
             self.master.minsize(500, 300) #setting (Height, Width)
 
-            # This CenterWindow method will center our app on the user's screen
             self.master.title("File Transfer")
             self.master.configure(background="#F0F0F0")
 
