@@ -7,10 +7,6 @@ from datetime import timedelta
 
 #Define class
 
-#set up sqlite cursor
-conn = sqlite3.connect('transfers.db')
-c = conn.cursor()
-
 class FileCheck():
     #Frame is the Tkinter frame class that our own class will inherit from
 
@@ -25,7 +21,7 @@ class FileCheck():
             self.master = master
             self.master.minsize(500, 300) #setting (Height, Width)
 
-            # This CenterWindow method will center our app on the user's screen
+            # This CenterWindow method will center the app on the user's screen
             self.master.title("File Transfer")
             self.master.configure(background="lightblue")
 
@@ -52,45 +48,52 @@ class FileCheck():
         def inputFolder(self):
             folderInput = filedialog.askdirectory()
             print("folderInput: {}".format(folderInput))
-            #label = Label(text=folderInput).pack()
             self.t1.set(folderInput)
 
         def outputFolder(self):
             folderOutput = filedialog.askdirectory()
             print("folderOutput: {}".format(folderOutput))
-            #label = Label(text=folderOutput).pack()
             self.t2.set(folderOutput)
 
         def transfer(self):
             fileFrom = self.t1.get()
             fileTo = self.t2.get()
-            today = datetime.datetime.today()
-            last24Hours = str(today - timedelta(hours=24))
-                
+            today1 = datetime.datetime.today()
+            last24Hours = str(today1 - timedelta(hours=24))
+            print(today1)
+
             for file in glob.glob(os.path.join(fileFrom, '*.txt')):
                 epochDate = os.path.getmtime(file)
                 modifiedDate = datetime.datetime.fromtimestamp(int(epochDate)).strftime('%Y-%m-%d %H:%M:%S')
                 if modifiedDate > last24Hours:
                     shutil.move(file, fileTo)
+                self.t3.set(today1)
+                dbToday = time.time()
+                print("dbToday: {}".format(dbToday))
+                self.data_entry(dbToday) #don't use global variables! It is better to pass in today to your database function
 
-            self.t3.set(today)
-            return self.t3
+        def create_table(self):
+            conn = sqlite3.connect('transfersDate.db')
+            with conn:
+                c = conn.cursor()
+                c.execute("CREATE TABLE IF NOT EXISTS date (time REAL)")
+            conn.commit()
+            conn.close()
 
-        
-        #def create_table():
-        #    c.execute('CREATE TABLE IF NOT EXISTS dateOfTransfer(time REAL, datestamp TEXT, keyword TEXT, value REAL)')
-        #def data_entry():
-        #    c.execute('INSERT INTO dateOfTransfer VALUES(?,?,?)',(t3, phone, email))
-            
-            
-
-
-#Python looks here first and runs the functions that fall below this line.
+        def data_entry(self,dbToday):
+            conn = sqlite3.connect('transfersDate.db')
+            with conn:
+                c = conn.cursor()
+                c.execute("INSERT INTO date (time) VALUES(?)""",(dbToday))
+            conn.commit()
+            c.close()
+            conn.close()    
 
 def main():
 
     root = Tk()
     App = FileCheck(root)
     root.mainloop()
+    
     
 if __name__ == "__main__": main()
